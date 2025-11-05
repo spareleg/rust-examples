@@ -1,5 +1,5 @@
 [package]
-name = "actix-form-serde"
+name = "web-gcd"
 version = "0.1.0"
 edition = "2024"
 

@@ -23,19 +23,18 @@ fn main() {
     let re = Regex::new(&args.pattern).unwrap();
     if let Some(input) = args.input {
         let f = File::open(input).unwrap();
-        process_lines(BufReader::new(f), re);
+        print_matched_lines(BufReader::new(f), re);
     } else {
-        let stdin = io::stdin();
-        process_lines(stdin.lock(), re);
+        print_matched_lines(io::stdin().lock(), re);
     }
 }
 
-fn process_lines<T: BufRead + Sized>(reader: T, re: Regex) {
+fn print_matched_lines<T: BufRead + Sized>(reader: T, re: Regex) {
     for line in reader.lines() {
         if let Ok(line) = line
             && re.is_match(&line)
         {
-            println!("{}", line)
+            println!("{line}")
         }
     }
 }

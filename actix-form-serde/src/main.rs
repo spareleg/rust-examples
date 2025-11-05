@@ -1,3 +1,4 @@
+/// A slightly modified example from the best book on Rust: https://www.oreilly.com/library/view/programming-rust-3rd/9781098176228/
 use actix_web::{App, HttpResponse, HttpServer, get, post, web};
 use serde::Deserialize;
 
@@ -11,7 +12,7 @@ struct GcdParameters {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    println!("Serving on http://0.0.0.0:{}", PORT);
+    println!("Serving on http://0.0.0.0:{PORT}");
     HttpServer::new(|| App::new().service(index).service(gcd_result))
         .bind(("0.0.0.0", PORT))?
         .run()
