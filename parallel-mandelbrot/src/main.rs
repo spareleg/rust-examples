@@ -1,5 +1,5 @@
 //! A slightly modified example from the book:
-//! https://www.oreilly.com/library/view/programming-rust-3rd/9781098176228/
+//! <https://www.oreilly.com/library/view/programming-rust-3rd/9781098176228/>
 
 use std::{env, thread};
 
