@@ -1,4 +1,6 @@
-/// A slightly modified example from the best book on Rust: https://www.oreilly.com/library/view/programming-rust-3rd/9781098176228/
+//! A slightly modified example from the book:
+//! https://www.oreilly.com/library/view/programming-rust-3rd/9781098176228/
+
 use actix_web::{App, HttpResponse, HttpServer, get, post, web};
 use serde::Deserialize;
 

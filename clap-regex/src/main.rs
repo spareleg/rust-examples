@@ -6,22 +6,18 @@ use std::{
 use clap::Parser;
 use regex::Regex;
 
-/// Lite version of grep
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
 struct Args {
-    /// The pattern to search for
     #[arg()]
     pattern: String,
-    /// File to search
     #[arg()]
-    input: Option<String>,
+    filename: Option<String>,
 }
 
 fn main() {
     let args = Args::parse();
     let re = Regex::new(&args.pattern).unwrap();
-    if let Some(input) = args.input {
+    if let Some(input) = args.filename {
         let f = File::open(input).unwrap();
         print_matched_lines(BufReader::new(f), re);
     } else {
