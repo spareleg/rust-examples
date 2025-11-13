@@ -1,0 +1,54 @@
+use std::{io, thread};
+
+pub trait Plotter<PX> {
+    /// 0.0, 0.0 = upper left corner
+    /// 1.0, 1.0 = lower right corner
+    fn pixel_at(&self, horizontal: f64, vertical: f64) -> PX;
+}
+
+pub struct Plot<PX> {
+    width: usize,
+    height: usize,
+    pixels: Vec<PX>,
+}
+
+impl<PX: Default + Copy> Plot<PX> {
+    pub fn new(width: usize, height: usize) -> Self {
+        Plot {
+            width,
+            height,
+            pixels: vec![PX::default(); width * height],
+        }
+    }
+
+    pub fn render_parallel<PL>(&mut self, plotter: &PL) -> io::Result<()>
+    where
+        PL: Plotter<PX> + Sync,
+        PX: Send,
+    {
+        let (width, height) = (self.width, self.height);
+        let threads_n = thread::available_parallelism()?.get();
+        let height_per_thread = height.div_ceil(threads_n);
+        let thread_pixels = self.pixels.chunks_mut(height_per_thread * width);
+        thread::scope(|scope| {
+            for (i, pixels) in thread_pixels.enumerate() {
+                let band_top = height_per_thread * i;
+                let band_height = pixels.len() / width;
+                scope.spawn(move || {
+                    for band_row in 0..band_height {
+                        let vertical = (band_top + band_row) as f64 / height as f64;
+                        for col in 0..width {
+                            let horizontal = col as f64 / width as f64;
+                            pixels[band_row * width + col] = plotter.pixel_at(horizontal, vertical);
+                        }
+                    }
+                });
+            }
+        });
+        Ok(())
+    }
+
+    pub fn pixels(&self) -> &[PX] {
+        &self.pixels
+    }
+}

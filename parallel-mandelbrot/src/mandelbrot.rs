@@ -1,5 +1,33 @@
 use num::Complex;
 
+use crate::plot::Plotter;
+
+pub struct MandelbrotSet {
+    upper_left: Complex<f64>,
+    width: f64,
+    height: f64,
+}
+
+impl MandelbrotSet {
+    pub fn new(upper_left: Complex<f64>, lower_right: Complex<f64>) -> Self {
+        MandelbrotSet {
+            upper_left,
+            width: lower_right.re - upper_left.re,
+            height: upper_left.im - lower_right.im,
+        }
+    }
+}
+
+impl Plotter<u8> for MandelbrotSet {
+    fn pixel_at(&self, horizontal: f64, vertical: f64) -> u8 {
+        let point = Complex {
+            re: self.upper_left.re + horizontal * self.width,
+            im: self.upper_left.im - vertical * self.height,
+        };
+        escape_time(point, 255).map_or(0, |count| 255 - count as u8)
+    }
+}
+
 /// Try to determine if `c` is in the Mandelbrot set, using at most `limit` iterations to decide.
 ///
 /// If `c` is not a member, return `Some(i)`, where `i` is the number of
@@ -15,66 +43,4 @@ fn escape_time(c: Complex<f64>, limit: usize) -> Option<usize> {
         z = z * z + c;
     }
     None
-}
-
-/// Given the row and column of a pixel in the output image, return the
-/// corresponding point on the complex plane.
-///
-/// `bounds` is a pair giving the width and height of the image in pixels.
-/// `pixel` is a (column, row) pair indicating a particular pixel in that image.
-/// The `upper_left` and `lower_right` parameters are points on the complex
-/// plane designating the area our image covers.
-pub fn pixel_to_point(
-    bounds: (usize, usize),
-    pixel: (usize, usize),
-    upper_left: Complex<f64>,
-    lower_right: Complex<f64>,
-) -> Complex<f64> {
-    let width = lower_right.re - upper_left.re;
-    let height = upper_left.im - lower_right.im;
-    Complex {
-        re: upper_left.re + pixel.0 as f64 * width / bounds.0 as f64,
-        im: upper_left.im - pixel.1 as f64 * height / bounds.1 as f64,
-        // Why subtraction here? pixel.1 increases as we go down,
-        // but the imaginary component increases as we go up.
-    }
-}
-
-#[test]
-fn test_pixel_to_point() {
-    assert_eq!(
-        pixel_to_point(
-            (100, 200),
-            (25, 175),
-            Complex { re: -1.0, im: 1.0 },
-            Complex { re: 1.0, im: -1.0 }
-        ),
-        Complex {
-            re: -0.5,
-            im: -0.75
-        }
-    );
-}
-
-/// Render a rectangle of the Mandelbrot set into a buffer of pixels.
-///
-/// Buffer `pixels` holds one grayscale pixel per byte.
-/// The `upper_left` and `lower_right` arguments specify points on the complex plane
-/// corresponding to the upper-left and lower-right corners of the pixel buffer.
-pub fn render(
-    pixels: &mut [u8],
-    width: usize,
-    height: usize,
-    upper_left: Complex<f64>,
-    lower_right: Complex<f64>,
-) {
-    assert!(pixels.len() == width * height);
-
-    for row in 0..height {
-        for column in 0..width {
-            let point = pixel_to_point((width, height), (column, row), upper_left, lower_right);
-            pixels[row * width + column] =
-                escape_time(point, 255).map_or(0, |count| 255 - count as u8);
-        }
-    }
 }
