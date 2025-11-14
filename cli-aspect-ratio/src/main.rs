@@ -24,10 +24,10 @@ fn read_from_stdin<R: FromStr>(prompt: &str, buffer: &mut String, is_valid: fn(&
     loop {
         buffer.clear();
         if io::stdin().read_line(buffer).is_ok()
-            && let Ok(n) = buffer.trim().parse()
-            && is_valid(&n)
+            && let Ok(input) = buffer.trim().parse()
+            && is_valid(&input)
         {
-            return n;
+            return input;
         } else {
             eprintln!("Invalid input")
         }
