@@ -25,13 +25,5 @@ fn main() {
     let mut plot = Plot::new(width, height);
     plot.render_parallel(&mandelbrot)
         .expect("error rendering plot in parallel");
-
-    image::save_buffer(
-        &args[1],
-        plot.pixels(),
-        width as u32,
-        height as u32,
-        image::ColorType::L8,
-    )
-    .expect("error writing PNG file");
+    plot.save(&args[1]).expect("error writing image file");
 }

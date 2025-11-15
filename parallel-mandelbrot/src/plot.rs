@@ -1,4 +1,6 @@
-use std::{io, thread};
+use std::{io, path::Path, thread};
+
+use image::{ImageBuffer, ImageResult, Luma};
 
 pub trait Plotter<PX> {
     /// 0.0, 0.0 = upper left corner
@@ -20,7 +22,9 @@ impl<PX: Default + Copy> Plot<PX> {
             pixels: vec![PX::default(); width * height],
         }
     }
+}
 
+impl<PX> Plot<PX> {
     pub fn render_parallel<PL>(&mut self, plotter: &PL) -> io::Result<()>
     where
         PL: Plotter<PX> + Sync,
@@ -50,5 +54,14 @@ impl<PX: Default + Copy> Plot<PX> {
 
     pub fn pixels(&self) -> &[PX] {
         &self.pixels
+    }
+}
+
+impl Plot<u8> {
+    pub fn save(&self, path: impl AsRef<Path>) -> ImageResult<()> {
+        let buf: ImageBuffer<Luma<_>, _> =
+            ImageBuffer::from_raw(self.width as u32, self.height as u32, self.pixels())
+                .expect("No way buffer sizes don't match");
+        buf.save(path)
     }
 }
