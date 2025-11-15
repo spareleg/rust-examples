@@ -1,22 +1,24 @@
+#[derive(Default, Debug)]
 pub enum Tree<T> {
+    #[default]
     Empty,
     Node(Box<Node<T>>),
 }
 
+#[derive(Default, Debug)]
 pub struct Node<T> {
     value: T,
     left: Tree<T>,
     right: Tree<T>,
 }
 
-impl<T: Ord> Tree<T> {
+impl<T: Default + Ord> Tree<T> {
     pub fn add(&mut self, value: T) {
         match self {
             Tree::Empty => {
                 *self = Tree::Node(Box::new(Node {
                     value,
-                    left: Tree::Empty,
-                    right: Tree::Empty,
+                    ..Default::default()
                 }));
             }
             Tree::Node(n) if n.value < value => {
