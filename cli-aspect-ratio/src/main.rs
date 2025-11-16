@@ -14,12 +14,17 @@ fn read_resolution() -> (u32, u32) {
     }
     // No 2 valid integers from args, ask for them through stdin
     let mut buffer = String::new();
-    let w = read_from_stdin("Width", &mut buffer, |&input| input > 0);
-    let h = read_from_stdin("Height", &mut buffer, |&input| input > 0);
+    let is_positive = |&input: &u32| input != 0;
+    let w = read_stdin("Width", &mut buffer, is_positive);
+    let h = read_stdin("Height", &mut buffer, is_positive);
     (w, h)
 }
 
-fn read_from_stdin<R: FromStr>(prompt: &str, buffer: &mut String, is_valid: fn(&R) -> bool) -> R {
+fn read_stdin<F, R>(prompt: &str, buffer: &mut String, mut is_valid: F) -> R
+where
+    R: FromStr,
+    F: FnMut(&R) -> bool,
+{
     println!("Enter {prompt}");
     loop {
         buffer.clear();
