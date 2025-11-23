@@ -20,22 +20,26 @@ fn main() {
         process::exit(1);
     };
 
-    // Read from the file if it's provided and accessible, otherwise read from standard input
-    if let Some(filename) = args.filename
-        && let Ok(f) = File::open(filename)
-    {
-        print_matched_lines(BufReader::new(f), re);
+    let res = if let Some(filename) = args.filename {
+        // Try reading from the provided file
+        File::open(filename).and_then(|f| print_matched_lines(BufReader::new(f), re))
     } else {
-        print_matched_lines(io::stdin().lock(), re);
+        // Filename is not provided so let's read from standard input
+        print_matched_lines(io::stdin().lock(), re)
+    };
+
+    if let Err(err) = res {
+        eprintln!("{err}");
+        process::exit(1)
     }
 }
 
-fn print_matched_lines(input: impl BufRead, re: Regex) {
+fn print_matched_lines(input: impl BufRead, re: Regex) -> io::Result<()> {
     for line in input.lines() {
-        if let Ok(line) = line
-            && re.is_match(&line)
-        {
+        let line = line?;
+        if re.is_match(&line) {
             println!("{line}")
         }
     }
+    Ok(())
 }
