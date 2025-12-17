@@ -39,6 +39,7 @@ impl<PX> Plot<PX> {
                 let band_top = height_per_thread * i;
                 let band_height = pixels.len() / width;
                 scope.spawn(move || {
+                    println!("Thread #{i} put to work");
                     for band_row in 0..band_height {
                         let vertical = (band_top + band_row) as f64 / height as f64;
                         for col in 0..width {
@@ -46,6 +47,7 @@ impl<PX> Plot<PX> {
                             pixels[band_row * width + col] = plotter.pixel_at(horizontal, vertical);
                         }
                     }
+                    println!("Thread #{i} finished");
                 });
             }
         });
