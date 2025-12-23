@@ -1,4 +1,4 @@
-use std::{io, path::Path, thread};
+use std::{io, ops::Deref, path::Path, thread};
 
 use image::{ImageBuffer, ImageResult, Luma};
 
@@ -53,8 +53,11 @@ impl<PX> Plot<PX> {
         });
         Ok(())
     }
+}
 
-    pub fn pixels(&self) -> &[PX] {
+impl<PX> Deref for Plot<PX> {
+    type Target = [PX];
+    fn deref(&self) -> &[PX] {
         &self.pixels
     }
 }
@@ -62,7 +65,7 @@ impl<PX> Plot<PX> {
 impl Plot<u8> {
     pub fn save(&self, path: impl AsRef<Path>) -> ImageResult<()> {
         let buf: ImageBuffer<Luma<_>, _> =
-            ImageBuffer::from_raw(self.width as u32, self.height as u32, self.pixels())
+            ImageBuffer::from_raw(self.width as u32, self.height as u32, &self[..])
                 .expect("No way buffer sizes don't match");
         buf.save(path)
     }
