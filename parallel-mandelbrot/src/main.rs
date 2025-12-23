@@ -1,6 +1,7 @@
 //! A modified example from the book: <https://www.oreilly.com/library/view/programming-rust-3rd/9781098176228/>
 
 use clap::Parser;
+use image::ColorType;
 use mandelbrot::MandelbrotSet;
 use plot::Plot;
 
@@ -37,5 +38,13 @@ fn main() {
     let mut plot = Plot::new(width, height);
     plot.render_parallel(&mandelbrot)
         .expect("error rendering plot in parallel");
-    plot.save(&args.filename).expect("error writing image file");
+
+    image::save_buffer(
+        &args.filename,
+        &plot,
+        width as u32,
+        height as u32,
+        ColorType::L8,
+    )
+    .expect("error writing image file");
 }
