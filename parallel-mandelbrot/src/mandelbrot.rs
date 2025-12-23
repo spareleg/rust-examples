@@ -28,6 +28,37 @@ impl Plotter<u8> for MandelbrotSet {
     }
 }
 
+impl Plotter<[u8; 3]> for MandelbrotSet {
+    fn pixel_at(&self, horizontal: f64, vertical: f64) -> [u8; 3] {
+        let point = Complex {
+            re: self.upper_left.re + horizontal * self.width,
+            im: self.upper_left.im - vertical * self.height,
+        };
+        let Some(et) = escape_time(point, 1024).map(|count| 1023 - count) else {
+            return [0, 0, 0];
+        };
+
+        match et {
+            0..256 => {
+                let g = et as u8;
+                [255 - g, g, 0]
+            }
+            256..512 => {
+                let b = (et - 256) as u8;
+                [0, 255 - b, b]
+            }
+            512..768 => {
+                let r = (et - 512) as u8;
+                [r, 0, 255]
+            }
+            768.. => {
+                let g = (et - 768) as u8;
+                [255, g, 255]
+            }
+        }
+    }
+}
+
 /// Try to determine if `c` is in the Mandelbrot set, using at most `limit` iterations to decide.
 ///
 /// If `c` is not a member, return `Some(i)`, where `i` is the number of

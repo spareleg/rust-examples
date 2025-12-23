@@ -41,10 +41,10 @@ fn main() {
 
     image::save_buffer(
         &args.filename,
-        &plot,
+        plot.as_flattened(),
         width as u32,
         height as u32,
-        ColorType::L8,
+        ColorType::Rgb8,
     )
     .expect("error writing image file");
 }
