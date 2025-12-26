@@ -1,7 +1,7 @@
 use std::mem;
 
 #[derive(Default, Debug, Clone)]
-pub enum BTreeSet<T> {
+pub enum TreeSet<T> {
     #[default]
     Empty,
     Node(Box<Node<T>>),
@@ -10,11 +10,11 @@ pub enum BTreeSet<T> {
 #[derive(Default, Debug, Clone)]
 pub struct Node<T> {
     value: T,
-    left: BTreeSet<T>,
-    right: BTreeSet<T>,
+    left: TreeSet<T>,
+    right: TreeSet<T>,
 }
 
-impl<T: Ord> BTreeSet<T> {
+impl<T: Ord> TreeSet<T> {
     pub fn add(&mut self, value: T) {
         match self {
             Self::Empty => {
@@ -63,7 +63,7 @@ impl<T: Ord> BTreeSet<T> {
     }
 }
 
-impl<T: Ord> FromIterator<T> for BTreeSet<T> {
+impl<T: Ord> FromIterator<T> for TreeSet<T> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         let mut tree = Self::Empty;
         tree.extend(iter);
@@ -71,7 +71,7 @@ impl<T: Ord> FromIterator<T> for BTreeSet<T> {
     }
 }
 
-impl<T: Ord> Extend<T> for BTreeSet<T> {
+impl<T: Ord> Extend<T> for TreeSet<T> {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         for item in iter {
             self.add(item);
@@ -79,7 +79,7 @@ impl<T: Ord> Extend<T> for BTreeSet<T> {
     }
 }
 
-impl<T: Ord> Iterator for BTreeSet<T> {
+impl<T: Ord> Iterator for TreeSet<T> {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
@@ -92,13 +92,13 @@ impl<T: Ord> Iterator for BTreeSet<T> {
     }
 }
 
-impl<T: Ord> DoubleEndedIterator for BTreeSet<T> {
+impl<T: Ord> DoubleEndedIterator for TreeSet<T> {
     fn next_back(&mut self) -> Option<T> {
         self.pop_right()
     }
 }
 
-impl<T: Ord> ExactSizeIterator for BTreeSet<T> {
+impl<T: Ord> ExactSizeIterator for TreeSet<T> {
     fn len(&self) -> usize {
         match self {
             Self::Empty => 0,
@@ -109,7 +109,7 @@ impl<T: Ord> ExactSizeIterator for BTreeSet<T> {
 
 #[test]
 fn it_works() {
-    let mut tree: BTreeSet<_> = ["zzz", "value", "monkey", "zzz"].into_iter().collect();
+    let mut tree: TreeSet<_> = ["zzz", "value", "monkey", "zzz"].into_iter().collect();
     tree.extend(["another", "monkey"]);
 
     // Only unique values
