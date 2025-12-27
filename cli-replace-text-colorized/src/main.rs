@@ -14,34 +14,25 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let re = Regex::new(&args.target).unwrap_or_else(|e| {
-        let msg = format!(
-            "failed to parse regular expression {}",
-            Yellow.underline().paint(&args.target)
-        );
-        exit(&msg, e)
-    });
 
-    let text = fs::read_to_string(&args.filename).unwrap_or_else(|e| {
-        let msg = format!(
-            "failed to read from file {}",
-            Yellow.underline().paint(&args.filename)
-        );
-        exit(&msg, e)
-    });
+    let re = Regex::new(&args.target)
+        .unwrap_or_else(|e| exit(e, "failed to parse regular expression", &args.target));
 
-    let text = re.replace_all(&text, &args.replacement).to_string();
+    let text = fs::read_to_string(&args.filename)
+        .unwrap_or_else(|e| exit(e, "failed to read from file", &args.filename));
 
-    if let Err(e) = fs::write(&args.output, text) {
-        let msg = format!(
-            "failed to write to file {}",
-            Yellow.underline().paint(&args.output)
-        );
-        exit(&msg, e)
+    let text = re.replace_all(&text, &args.replacement);
+
+    if let Err(e) = fs::write(&args.output, text.as_bytes()) {
+        exit(e, "failed to write to file", &args.output)
     }
 }
 
-fn exit(msg: &str, err: impl Error) -> ! {
-    eprintln!("{} {msg}\n{err}", Red.bold().paint("Error:"));
+fn exit(err: impl Error, msg: &str, details: &str) -> ! {
+    eprintln!(
+        "{} {msg} {}\n{err}",
+        Red.bold().paint("Error:"),
+        Yellow.underline().paint(details),
+    );
     process::exit(1)
 }
