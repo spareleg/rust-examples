@@ -36,8 +36,7 @@ fn main() {
 
     let mandelbrot = MandelbrotSet::new(upper_left, lower_right);
     let mut plot = Plot::new(width, height);
-    plot.render_parallel(&mandelbrot)
-        .expect("error rendering plot in parallel");
+    plot.render_parallel(&mandelbrot);
 
     image::save_buffer(
         &args.filename,

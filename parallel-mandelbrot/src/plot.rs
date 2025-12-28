@@ -1,4 +1,5 @@
-use std::{io, ops::Deref, thread};
+use rayon::prelude::*;
+use std::ops::Deref;
 
 pub trait Plotter<PX> {
     /// 0.0, 0.0 = upper left corner
@@ -23,33 +24,22 @@ impl<PX: Default + Copy> Plot<PX> {
 }
 
 impl<PX> Plot<PX> {
-    pub fn render_parallel<PL>(&mut self, plotter: &PL) -> io::Result<()>
+    pub fn render_parallel<PL>(&mut self, plotter: &PL)
     where
         PL: Plotter<PX> + Sync,
         PX: Send,
     {
-        let (width, height) = (self.width, self.height);
-        let threads_n = thread::available_parallelism()?.get();
-        let height_per_thread = height.div_ceil(threads_n);
-        let thread_pixels = self.pixels.chunks_mut(height_per_thread * width);
-        thread::scope(|scope| {
-            for (i, pixels) in thread_pixels.enumerate() {
-                let band_top = height_per_thread * i;
-                let band_height = pixels.len() / width;
-                scope.spawn(move || {
-                    println!("Thread #{i} put to work");
-                    for band_row in 0..band_height {
-                        let vertical = (band_top + band_row) as f64 / height as f64;
-                        for col in 0..width {
-                            let horizontal = col as f64 / width as f64;
-                            pixels[band_row * width + col] = plotter.pixel_at(horizontal, vertical);
-                        }
-                    }
-                    println!("Thread #{i} finished");
-                });
-            }
-        });
-        Ok(())
+        self.pixels
+            .chunks_mut(self.width)
+            .enumerate()
+            .par_bridge()
+            .for_each(|(row, pixels)| {
+                let vertical = row as f64 / self.height as f64;
+                for (col, px) in pixels.iter_mut().enumerate() {
+                    let horizontal = col as f64 / self.width as f64;
+                    *px = plotter.pixel_at(horizontal, vertical);
+                }
+            });
     }
 }
 
