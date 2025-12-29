@@ -8,6 +8,7 @@ use std::{
     thread::{self, JoinHandle},
 };
 
+// cargo run Cargo.toml src/main.rs
 fn main() {
     let files = env::args().skip(1).map(PathBuf::from).collect();
 
@@ -28,7 +29,8 @@ fn main() {
 fn start_file_reading_thread(
     files: Vec<PathBuf>,
 ) -> (Receiver<String>, JoinHandle<io::Result<()>>) {
-    let (tx, rx) = mpsc::channel();
+    // Channel with a buffer for 32 unread sends
+    let (tx, rx) = mpsc::sync_channel(32);
 
     let handle = thread::spawn(move || {
         for file_path in files {
@@ -47,9 +49,8 @@ fn start_file_reading_thread(
     (rx, handle)
 }
 
-fn start_char_counting_thread(
-    lines: Receiver<String>,
-) -> (Receiver<(char, usize)>, JoinHandle<()>) {
+fn start_char_counting_thread(lines: Receiver<String>) -> (Receiver<(char, u32)>, JoinHandle<()>) {
+    // Infinite buffer channel: sender never blocks
     let (tx, rx) = mpsc::channel();
 
     let handle = thread::spawn(move || {
@@ -73,7 +74,7 @@ fn start_char_counting_thread(
     (rx, handle)
 }
 
-fn print_top_char(char_counts: Receiver<(char, usize)>) {
+fn print_top_char(char_counts: Receiver<(char, u32)>) {
     let mut max_count = 0;
     let mut top_chars = BTreeSet::new();
 
