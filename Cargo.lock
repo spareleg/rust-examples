@@ -1132,6 +1132,10 @@ name = "iter-adapters"
 version = "0.1.0"
 
 [[package]]
+name = "iter-multithread"
+version = "0.1.0"
+
+[[package]]
 name = "iter-traits"
 version = "0.1.0"
 
