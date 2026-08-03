@@ -7,6 +7,7 @@ pub trait Plotter<PX> {
     fn pixel_at(&self, horizontal: f64, vertical: f64) -> PX;
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Plot<PX> {
     width: usize,
     height: usize,
@@ -21,9 +22,7 @@ impl<PX: Default + Copy> Plot<PX> {
             pixels: vec![PX::default(); width * height],
         }
     }
-}
 
-impl<PX> Plot<PX> {
     pub fn render_parallel<PL>(&mut self, plotter: &PL)
     where
         PL: Plotter<PX> + Sync,

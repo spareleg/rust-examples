@@ -16,7 +16,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
     let Ok(re) = Regex::new(&args.pattern) else {
-        eprintln!("Invalid pattern 🤨 {}", &args.pattern);
+        eprintln!("Invalid pattern 🤨 {}", args.pattern);
         process::exit(1);
     };
 

@@ -5,6 +5,8 @@ use image::ColorType;
 use mandelbrot::MandelbrotSet;
 use plot::Plot;
 
+use crate::parse::Pair;
+
 mod mandelbrot;
 mod parse;
 mod plot;
@@ -27,14 +29,20 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let (width, height) =
-        parse::pair(&args.dimensions, 'x').expect("error parsing image dimensions");
-    let upper_left =
-        parse::complex(&args.upper_left).expect("error parsing upper left corner point");
-    let lower_right =
-        parse::complex(&args.lower_right).expect("error parsing lower right corner point");
+    let Pair(width, height) = args
+        .dimensions
+        .parse()
+        .expect("error parsing image dimensions");
+    let upper_left: Pair<_> = args
+        .upper_left
+        .parse()
+        .expect("error parsing upper left corner point");
+    let lower_right: Pair<_> = args
+        .lower_right
+        .parse()
+        .expect("error parsing lower right corner point");
 
-    let mandelbrot = MandelbrotSet::new(upper_left, lower_right);
+    let mandelbrot = MandelbrotSet::new(upper_left.into(), lower_right.into());
     let mut plot = Plot::new(width, height);
     plot.render_parallel(&mandelbrot);
 

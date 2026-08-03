@@ -2,6 +2,7 @@ use num::Complex;
 
 use crate::plot::Plotter;
 
+#[derive(Debug, PartialEq)]
 pub struct MandelbrotSet {
     upper_left: Complex<f64>,
     width: f64,
@@ -16,6 +17,23 @@ impl MandelbrotSet {
             height: upper_left.im - lower_right.im,
         }
     }
+
+    /// Try to determine if `c` is in the Mandelbrot set, using at most `limit` iterations to decide.
+    ///
+    /// If `c` is not a member, return `Some(i)`, where `i` is the number of
+    /// iterations it took for `c` to leave the circle of radius two centered on the
+    /// origin. If `c` seems to be a member (more precisely, if we reached the
+    /// iteration limit without being able to prove that `c` is not a member), return `None`.
+    fn escape_time(c: Complex<f64>, limit: usize) -> Option<usize> {
+        let mut z = Complex { re: 0.0, im: 0.0 };
+        for i in 0..limit {
+            if z.norm_sqr() > 4.0 {
+                return Some(i);
+            }
+            z = z * z + c;
+        }
+        None
+    }
 }
 
 impl Plotter<u8> for MandelbrotSet {
@@ -24,7 +42,7 @@ impl Plotter<u8> for MandelbrotSet {
             re: self.upper_left.re + horizontal * self.width,
             im: self.upper_left.im - vertical * self.height,
         };
-        escape_time(point, 255).map_or(0, |count| 255 - count as u8)
+        Self::escape_time(point, 255).map_or(0, |count| 255 - count as u8)
     }
 }
 
@@ -34,7 +52,7 @@ impl Plotter<[u8; 3]> for MandelbrotSet {
             re: self.upper_left.re + horizontal * self.width,
             im: self.upper_left.im - vertical * self.height,
         };
-        let Some(et) = escape_time(point, 1024).map(|count| 1023 - count) else {
+        let Some(et) = Self::escape_time(point, 1024).map(|count| 1023 - count) else {
             return [0, 0, 0];
         };
 
@@ -57,21 +75,4 @@ impl Plotter<[u8; 3]> for MandelbrotSet {
             }
         }
     }
-}
-
-/// Try to determine if `c` is in the Mandelbrot set, using at most `limit` iterations to decide.
-///
-/// If `c` is not a member, return `Some(i)`, where `i` is the number of
-/// iterations it took for `c` to leave the circle of radius two centered on the
-/// origin. If `c` seems to be a member (more precisely, if we reached the
-/// iteration limit without being able to prove that `c` is not a member), return `None`.
-fn escape_time(c: Complex<f64>, limit: usize) -> Option<usize> {
-    let mut z = Complex { re: 0.0, im: 0.0 };
-    for i in 0..limit {
-        if z.norm_sqr() > 4.0 {
-            return Some(i);
-        }
-        z = z * z + c;
-    }
-    None
 }
